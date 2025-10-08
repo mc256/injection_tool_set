@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debug-deployment
+  namespace: default
+  labels:
+    app: debug-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debug-app
+  template:
+    metadata:
+      labels:
+        app: debug-app
+    spec:
+      containers:
+      - name: debug-container
+        image: alpine:latest
+        command: ["/bin/sh"]
+        args: ["-c", "sleep infinity"]
+        volumeMounts:
+        - name: host-root
+          mountPath: /host-root
+          readOnly: false
+        - name: host-etc
+          mountPath: /host-etc
+          readOnly: false
+        securityContext:
+          privileged: true
+          runAsUser: 0
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /root
+          type: Directory
+      - name: host-etc
+        hostPath:
+          path: /etc
+          type: Directory
+      hostNetwork: true
+      hostPID: true
+      restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/hostname: router
